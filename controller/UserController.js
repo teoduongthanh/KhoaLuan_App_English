@@ -4,23 +4,23 @@ const JwtUserSevice = require("../services/jwtService");
 
 const createUser = async (req, res) => {
   try {
-    const { name, email, password, confirmPassword, phone } = req.body;
+    const { name, email, password, confirmPassword} = req.body;
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const isCheckEmail = re.test(email);
 
-    if (!name || !email || !password || !confirmPassword || !phone) {
+    if (!name || !email || !password || !confirmPassword ) {
       return res.status(400).json({
-        status: "ERR",
+        status: "Error",
         message: "the input is required",
       });
     } else if (!isCheckEmail) {
       return res.status(400).json({
-        status: "ERR",
+        status: "Error",
         message: "the input is not email",
       });
     } else if (password !== confirmPassword) {
       return res.status(400).json({
-        status: "ERR",
+        status: "Error",
         message: "the input is not equal password",
       });
     }
@@ -43,12 +43,12 @@ const logginUser = async (req, res) => {
 
     if (!email || !password) {
       return res.status(400).json({
-        status: "ERR",
+        status: "Error",
         message: "the input is required",
       });
     } else if (!isCheckEmail) {
       return res.status(400).json({
-        status: "ERR",
+        status: "Error",
         message: "the input is not email",
       });
     }
@@ -61,9 +61,10 @@ const logginUser = async (req, res) => {
     // Giá trị trả về: Nó trả về một đối tượng.
     res.cookie("refresh_token", refresh_token,{
       //giúp tăng tính bảo mật cho client, đảm bảo rằng cookie không thể được truy cập thông qua JavaScript trong trình duyệt
-      HttpOnly: true,
+      httpOnly: true,
       //hiết lập này đảm bảo rằng cookie chỉ được gửi qua các kết nối HTTPS, giúp ngăn chặn việc cookie bị đánh cắp khi truyền qua các kết nối HTTP không an toàn.
-      Secure: true,
+      Secure: false,
+      samsite: 'strict'
     })
     return res.status(200).json(newReponse);
   } catch (e) {
@@ -73,18 +74,30 @@ const logginUser = async (req, res) => {
   }
 };
 
+const logoutUser = async (req, res) => {
+  try {
+    res.clearCookie('refresh_token');
+    return res.status(200).json({
+      status: "OK",
+      message:'logout  '
+    });
+  } catch (e) {
+    return res.status(404).json({
+      message: e,
+    });
+  }
+};
 const updateUser = async (req, res) => {
   try {
     const userId = req.params._id;
     const data = req.body;
     if (!userId) {
       return res.status(400).json({
-        status: "ERR",
+        status: "Error",
         message: "the userID is required",
       });
     }
-    console.log("user id", userId);
-
+    
     const resp = await UserSevice.updateUser(userId, data);
     return res.status(200).json(resp);
   } catch (e) {
@@ -101,7 +114,7 @@ const deleteUser = async (req, res) => {
     console.log("token is ", token);
     if (!userId) {
       return res.status(400).json({
-        status: "ERR",
+        status: "Error",
         message: "the userID is required",
       });
     }
@@ -138,13 +151,14 @@ const getDetailUser = async (req, res) => {
 };
 
 const refreshToken = async (req, res) => {
-  // console.log("rep.cookies",req.cookies);
+  console.log("req.cookies.refresh_token",req.cookies.refresh_token);
+
   try {
     const token = req.cookies.refresh_token
     console.log("token refresh", token);
     if (!token) {
-      return res.status(404).json({
-        status: "ERR",
+      return res.status(200).json({
+        status: "Error",
         message: "the the is requied",
       });
     }
@@ -164,4 +178,5 @@ module.exports = {
   getAllUser,
   getDetailUser,
   refreshToken,
+  logoutUser
 };

@@ -1,16 +1,18 @@
 const User = require("../model/UserModel");
 const bcrypt = require("bcrypt");
 const { genneralAccessToken, genneralRefreshToken } = require("./jwtService");
+
 const createUser = (newUser) => {
   return new Promise(async (resolve, reject) => {
-    const { name, email, password, confirmPassword, phone } = newUser;
+    const { name, email, password} = newUser;
+    console.log("newUser",newUser)
     try {
       const checkUser = await User.findOne({
         email: email,
       });
       if (checkUser !== null) {
         resolve({
-          status: "ERR",
+          status: "Error",
           message: "The email is already",
         });
       }
@@ -19,10 +21,9 @@ const createUser = (newUser) => {
       const createdUser = await User.create({
         name,
         email,
-        password: hash,
-        phone,
+        password: hash
       });
-
+      
       if (createdUser) {
         resolve({
           status: "Ok",
@@ -39,23 +40,26 @@ const createUser = (newUser) => {
 const logginUser = (userLogin) => {
   return new Promise(async (resolve, reject) => {
     const { email, password} = userLogin;
-    console.log(userLogin)
+    console.log("userLogin",userLogin)
     try {
       const checkUser = await User.findOne({
         email: email,
       });
-      if (checkUser === null) {
+      console.log("checkUser",checkUser)
+      if (checkUser == null) {
         resolve({
-          status: "ERR",
+          status: "Error",
           message: "The user is not defined",
         });
       }
-      //kiểm tra xem passwork người nhập với password trong data cso đúng hay không
+      //kiểm tra xem passwork người nhập với password trong data có đúng hay không
       const comparePassword = bcrypt.compareSync(password, checkUser.password);
+
       console.log("comparePassword",comparePassword)
+
       if (!comparePassword) {
         resolve({
-          status: "OK",
+          status: "Error",
           message: "The password or user is incorrect",
         });
       }

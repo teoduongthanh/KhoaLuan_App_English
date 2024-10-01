@@ -6,7 +6,7 @@ const genneralAccessToken = async (payload) => {
       ...payload,
     },
     "access_token",
-    { expiresIn: "1h" }
+    { expiresIn: "5s" }
   );
   return access_token;
 };
@@ -34,20 +34,19 @@ const refreshTokenJWTService = (token) => {
       //     message: "The user is not defined",
       //   });
       // }
-      console.log("token service", token);
-      jwt.verify(token, "refresh_token", async function(err, user) {
-        if (err) {
+      jwt.verify(token, "refresh_token", async function(Error, user) {
+        if (Error) {
           return res.status(400).json({
             message: "the authemtication",
-            status: "error",
+            status: "Erroror",
           });
         }
          //khi lays được user từ refresh token và tạo access token mới cho user đó
-        const {payload} = user;
-        console.log(payload)
+       
+
         const access_token = await genneralAccessToken({
-        id: payload.id,
-        isAdmin: payload?.isAdmin
+        id: user.id,
+        isAdmin: user?.isAdmin
         });
         console.log("access_token",access_token);
         resolve({
